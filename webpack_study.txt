@@ -1,0 +1,81 @@
+# install dependencies
+npm install
+
+# bundle
+npm start
+
+vs code
+1. 터미널에서 버전 확인
+  1.1 node -v (node 버전 확인)
+  1.2 npm -v (npm 버전 확인)
+
+2. 설치 (프로젝트 경로에서)
+  2.1 터미널 npm init -y (npm으로 package.json 생성/ -y는 설정들 자동 생성됨)
+      -> package.json(정보저장) 생성
+
+3. npm webpack cli 설치(cli로 받으면 기본적으로 다 설정됨)
+  3.1 터미널 npm i webpack-cli -global
+      (i:install / -global:컴퓨터안에 저장[사용자 defalut AppData 안에 설치]- 다른데 설치안하고 계속 쓸수있음)
+
+4. webpack init 하기
+  4.1 터미널 webpack-cli init -> Y -> index -> index -> dist -> Yes -> Yes -> css선택 -> 엔터
+  4.2 webpack.prod.js 변경해야함
+      1. entry: {
+		main:["./inc/css/common.css","./inc/css/default.css"],
+		ui:"./inc/js/main.js"
+	},
+      2. plugins: [
+		new UglifyJSPlugin(), 
+		new ExtractTextPlugin('[name].min.css')
+	]
+  4.3 package.json (start 추가)
+      1. "scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1",
+		"start":"webpack --config webpack.prod.js"
+          },
+  4.4 터미널 npm start 실행 -> dist 폴더 생성
+----------------------------------------------------------
+5. npm css loader
+  5.1 터미널 npm install --save-dev css-loader 추가
+  5.2 webpack.prod.js (minimize:true 추가)
+      1. {
+	   loader: 'css-loader',
+	   options: {
+	      sourceMap: true,
+	      minimize:true
+	   }
+	 }
+6. 자동감지기능 추가
+  6.1 package.json scripts 안에 --watch 추가
+      "start": "webpack --watch --config webpack.prod.js"
+----------------------------------------------------------
+7. webpack spritesmith
+   7.1 터미널 npm i webpack-spritesmith --save-dev
+   7.2 webpack.prod.js 에 추가
+       1. const  SpritesmithPlugin = require('webpack-spritesmith');
+       2. module > rules 안에 추가
+          1. ,
+               {test: /\.png$/, loaders: [
+                 'file-loader?name=i/[hash].[ext]'
+               ]}
+          2. ,
+              resolve: {
+               //webpack 2+:
+               modules: ["node_modules", "spritesmith-generated"]
+              },
+              plugins: [
+                new SpritesmithPlugin({
+                  src: {
+                    cwd: path.resolve(__dirname, 'inc/images/common'),
+                    glob: '*.png'
+                  },
+                  target: {
+                    image: path.resolve(__dirname, 'dist/sprite.png'),
+                    css: path.resolve(__dirname, 'dist/sprite.css')
+                  },
+                  apiOptions: {
+                    cssImageRef: "~sprite.png"
+                  }
+                })
+              ]
+
